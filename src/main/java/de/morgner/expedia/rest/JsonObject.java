@@ -19,16 +19,15 @@
 
 package de.morgner.expedia.rest;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import de.morgner.expedia.result.EanResult;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -47,7 +46,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
  */
 public abstract class JsonObject {
 
-	private static final Gson gson     = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();	
+	private static final Gson gson     = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setFieldNamingPolicy(FieldNamingPolicy.IDENTITY).setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();	
 	private static final Logger logger = Logger.getLogger(JsonObject.class.getName());
 	
 	private static DefaultHttpClient client = null;
@@ -67,7 +66,7 @@ public abstract class JsonObject {
 	 * 
 	 * @throws Throwable 
 	 */
-	public static <R extends EanResult, S extends EanResult> R doPost(final Class<R> resultType, final Class<S> dataType, final S data, final String path) throws IOException, RestClientException, ExpediaException {
+	public static <R extends JsonObject, S extends JsonObject> R doPost(final Class<R> resultType, final Class<S> dataType, final S data, final String path) throws IOException, RestClientException, ExpediaException {
 		return post(buildPath(path), data, dataType, resultType);
 	}
 	
@@ -76,7 +75,7 @@ public abstract class JsonObject {
 	 * 
 	 * @throws Throwable 
 	 */
-	public static <R extends EanResult, S extends EanResult> R doPut(final Class<R> resultType, final Class<S> dataType, final S data, final String path) throws IOException, RestClientException, ExpediaException {
+	public static <R extends JsonObject, S extends JsonObject> R doPut(final Class<R> resultType, final Class<S> dataType, final S data, final String path) throws IOException, RestClientException, ExpediaException {
 		return put(buildPath(path), data, dataType, resultType);
 	}
 	
@@ -89,7 +88,7 @@ public abstract class JsonObject {
 	 * @return the entity from the REST server, or null if the entity was not found
 	 * @throws Throwable 
 	 */
-	public static <T extends EanResult> T doGet(final Class<T> type, final String path) throws IOException, RestClientException, ExpediaException {
+	public static <T extends JsonObject> T doGet(final Class<T> type, final String path) throws IOException, RestClientException, ExpediaException {
 		return load(type, buildPath(path));
 	}
 
@@ -118,13 +117,13 @@ public abstract class JsonObject {
 	}
 	
 	// ----- private static methods -----
-	protected static <T extends EanResult> T load(Class<T> type, String path) throws IOException, RestClientException, ExpediaException {
+	protected static <T extends JsonObject> T load(Class<T> type, String path) throws IOException, RestClientException, ExpediaException {
 		
 		logger.log(Level.INFO, "GET {0}", path);
 		return execute(new HttpGet(path), type);
 	}
 	
-	private static <S extends EanResult, R extends EanResult> R post(final String path, final S entity, final Class<S> type, final Class<R> resultType) throws IOException, RestClientException, ExpediaException {
+	private static <S extends JsonObject, R extends JsonObject> R post(final String path, final S entity, final Class<S> type, final Class<R> resultType) throws IOException, RestClientException, ExpediaException {
 		
 		final HttpPost httpPost = new HttpPost(path);
 		final StringBuilder buf = new StringBuilder();
@@ -145,7 +144,7 @@ public abstract class JsonObject {
 		return execute(httpPost, resultType);
 	}
 	
-	private static <S extends EanResult, R extends EanResult> R put(final String path, final S entity, final Class<S> type, final Class<R> resultType) throws IOException, RestClientException, ExpediaException {
+	private static <S extends JsonObject, R extends JsonObject> R put(final String path, final S entity, final Class<S> type, final Class<R> resultType) throws IOException, RestClientException, ExpediaException {
 		
 		final HttpPut httpPut   = new HttpPut(path);
 		final StringBuilder buf = new StringBuilder();
@@ -166,7 +165,7 @@ public abstract class JsonObject {
 		return execute(httpPut, resultType);
 	}
 	
-	private static <T extends EanResult> T execute(final HttpUriRequest request, final Class<T> type) throws IOException, RestClientException, ExpediaException {
+	private static <T extends JsonObject> T execute(final HttpUriRequest request, final Class<T> type) throws IOException, RestClientException, ExpediaException {
 			
 		final DefaultHttpClient httpClient = getHttpClient();
 		
@@ -189,6 +188,7 @@ public abstract class JsonObject {
 				
 			} catch (JsonSyntaxException jsex) {
 
+				jsex.printStackTrace();
 				// log exception?
 			}
 

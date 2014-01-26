@@ -11,7 +11,7 @@ import com.google.gson.annotations.Expose;
  *
  * @author Christian Morgner
  */
-class Hotel {
+public class ExpediaHotel {
 	
 	/**
 	 * ID for the property. This same ID will be used in any subsequent room or reservation requests.
