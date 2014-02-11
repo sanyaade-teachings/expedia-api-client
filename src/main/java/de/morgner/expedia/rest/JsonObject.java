@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -176,9 +177,10 @@ public abstract class JsonObject {
 
 		logger.log(Level.INFO, "response:\n{0}", response);
 		
-		if(response.getStatusLine().getStatusCode() == 200) {
+		if (response.getStatusLine().getStatusCode() == 200) {
 
-			final String json = consumeContent(response);
+			// Patch JSON string: HotelSummary is not always an array
+			final String json = StringUtils.replace(StringUtils.replace(consumeContent(response), "\"HotelSummary\":{", "\"HotelSummary\":[{"), "}}}}", "}]}}}");
 			
 			logger.log(Level.INFO, "JSON response:\n{0}", json);
 			

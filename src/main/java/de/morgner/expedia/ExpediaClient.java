@@ -96,7 +96,7 @@ public class ExpediaClient {
 	}
 	
 	public ExpediaResult<List<ExpediaHotel>> getHotelsByGeolocation(final double latitude, final double longitude, final int radius, final SortKey sortKey) throws IOException, RestClientException, ExpediaException {
-		
+
 		final HotelListResponse response = JsonObject.doGet(HotelListResponse.class, buildPath("/hotel/v3/list",
 			
 			new ParameterBase("latitude", Double.valueOf(latitude).toString()),
@@ -108,7 +108,27 @@ public class ExpediaClient {
 		
 		return extractHotels(response);
 	}
+	public ExpediaResult<List<ExpediaHotel>> getHotelsByGeolocationNameAndCity(final double latitude, final double longitude, final int radius, final String name, final String city, final String country) throws IOException, RestClientException, ExpediaException {
+		return getHotelsByGeolocationNameAndCity(latitude, longitude, radius, name, city, country, SortKey.PROXIMITY);
+	}
 	
+	public ExpediaResult<List<ExpediaHotel>> getHotelsByGeolocationNameAndCity(final double latitude, final double longitude, final int radius, final String name, final String city, final String country, final SortKey sortKey) throws IOException, RestClientException, ExpediaException {
+		
+		final HotelListResponse response = JsonObject.doGet(HotelListResponse.class, buildPath("/hotel/v3/list",
+			
+			new ParameterBase("latitude", Double.valueOf(latitude).toString()),
+			new ParameterBase("longitude", Double.valueOf(longitude).toString()),
+			new ParameterBase("searchRadius", Integer.valueOf(radius).toString()),
+			new ParameterBase("searchRadiusUnit", "KM"),
+			new ParameterBase("city", city),
+			new ParameterBase("countryCode", country),
+			new ParameterBase("propertyName", name),
+			new Sort(sortKey)
+		));
+		
+		return extractHotels(response);
+	}
+
 	public ExpediaResult<ExpediaHotelInfo> getAvailability(final long hotelId, final Date arrivalDate, final Date departureDate) throws IOException, RestClientException, ExpediaException {
 		
 		final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
